@@ -1,0 +1,233 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Source+Sans+3:wght@400;600&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #0d1117;
+  color: #e6edf3;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+#ui {
+  position: relative;
+  box-shadow: 0 0 60px rgba(120, 80, 40, 0.35);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+#game {
+  display: block;
+  background: #1a120b;
+  max-width: 100vw;
+  height: auto;
+}
+
+#hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+  font-size: 14px;
+  font-weight: 600;
+  pointer-events: none;
+  z-index: 5;
+  text-shadow: 0 1px 3px #000;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 6, 4, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  backdrop-filter: blur(4px);
+}
+
+.overlay.hidden {
+  display: none;
+}
+
+.panel {
+  background: linear-gradient(160deg, #2a1f14 0%, #1a120b 100%);
+  border: 2px solid #8b6914;
+  border-radius: 12px;
+  padding: 28px 32px;
+  max-width: 480px;
+  width: 92%;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,220,150,0.1);
+}
+
+.panel.wide {
+  max-width: 640px;
+}
+
+.panel.lore {
+  max-width: 420px;
+}
+
+h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 1.9rem;
+  color: #e8c547;
+  margin-bottom: 4px;
+  letter-spacing: 0.04em;
+}
+
+h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 1.4rem;
+  color: #e8c547;
+  margin-bottom: 12px;
+}
+
+.subtitle {
+  color: #a89060;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+.panel p {
+  line-height: 1.55;
+  margin-bottom: 14px;
+  color: #d4c4a8;
+  font-size: 0.95rem;
+}
+
+kbd {
+  background: #3a2e1f;
+  border: 1px solid #6b5430;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.85em;
+  color: #e8c547;
+}
+
+.btn {
+  display: inline-block;
+  margin: 6px 4px;
+  padding: 10px 22px;
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn.primary {
+  background: linear-gradient(180deg, #c9a227, #8b6914);
+  color: #1a120b;
+  box-shadow: 0 4px 12px rgba(201, 162, 39, 0.35);
+}
+
+.btn.secondary {
+  background: #3a2e1f;
+  color: #e8c547;
+  border: 1px solid #6b5430;
+}
+
+.btn.danger {
+  background: #5c2020;
+  color: #f0c0c0;
+  border: 1px solid #8b3030;
+  font-size: 0.85rem;
+  margin-top: 12px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+input[type="text"] {
+  padding: 10px 14px;
+  border: 1px solid #6b5430;
+  border-radius: 6px;
+  background: #1a120b;
+  color: #e6edf3;
+  font-size: 1rem;
+  outline: none;
+}
+
+input[type="text"]:focus {
+  border-color: #e8c547;
+  box-shadow: 0 0 0 2px rgba(232, 197, 71, 0.25);
+}
+
+.feedback {
+  min-height: 1.2em;
+  font-size: 0.9rem;
+}
+
+.feedback.error {
+  color: #f08080;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 0.9rem;
+}
+
+th, td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid #3a2e1f;
+}
+
+th {
+  color: #e8c547;
+  font-weight: 600;
+}
+
+#message {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.75);
+  padding: 8px 18px;
+  border-radius: 6px;
+  border: 1px solid #8b6914;
+  font-size: 0.95rem;
+  z-index: 10;
+  pointer-events: none;
+}
+
+#message.hidden {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  h1 { font-size: 1.5rem; }
+  .panel { padding: 20px; }
+  #hud { font-size: 12px; padding: 8px 10px; }
+}
