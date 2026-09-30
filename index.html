@@ -20,14 +20,14 @@
     <div class="panel">
       <h1>La Pierre Mysterieuse</h1>
       <p class="subtitle">Projet Arts Plastiques — Classe 5°8</p>
-      <p>Explore des ruines, collecte les fragments et decouvre l'histoire de la pierre. Fleches / WASD + Espace.</p>
+      <p>Explore 3 mondes, collecte 4 fragments par niveau. Fleches/WASD + Espace.</p>
       <button id="btn-start" class="btn primary">Commencer l'aventure</button>
       <button id="btn-results" class="btn secondary">Voir les resultats (classe 5°8)</button>
     </div>
   </div>
   <div id="lore-screen" class="overlay hidden">
     <div class="panel lore">
-      <h2 id="lore-title">Fragment decouvert</h2>
+      <h2 id="lore-title">Fragment</h2>
       <p id="lore-text"></p>
       <button id="btn-continue" class="btn primary">Continuer</button>
     </div>
@@ -36,12 +36,11 @@
     <div class="panel">
       <h2>La Pierre est reunie !</h2>
       <p id="win-stats"></p>
-      <p>Entre ton prenom, nom et classe pour enregistrer ton score.</p>
       <form id="score-form">
-        <input type="text" id="prenom" placeholder="Prenom" required maxlength="30" />
-        <input type="text" id="nom" placeholder="Nom de famille" required maxlength="40" />
-        <input type="text" id="classe" placeholder="Classe (ex: 5°8)" required maxlength="10" />
-        <button type="submit" class="btn primary">Enregistrer mon score</button>
+        <input type="text" id="prenom" placeholder="Prenom" required />
+        <input type="text" id="nom" placeholder="Nom" required />
+        <input type="text" id="classe" placeholder="Classe (5°8)" required />
+        <button type="submit" class="btn primary">Enregistrer</button>
       </form>
       <p id="form-feedback" class="feedback"></p>
       <button id="btn-replay" class="btn secondary">Rejouer</button>
@@ -49,25 +48,20 @@
   </div>
   <div id="results-screen" class="overlay hidden">
     <div class="panel wide">
-      <h2>Resultats de la classe 5°8</h2>
+      <h2>Resultats 5°8</h2>
       <div id="auth-box">
-        <p>Entre le code de classe pour voir les scores :</p>
-        <input type="text" id="auth-classe" placeholder="5°8" maxlength="10" />
+        <input type="text" id="auth-classe" placeholder="5°8" />
         <button id="btn-auth" class="btn primary">Valider</button>
         <p id="auth-error" class="feedback error"></p>
       </div>
       <div id="results-list" class="hidden">
-        <table>
-          <thead><tr><th>#</th><th>Prenom</th><th>Nom</th><th>Temps</th><th>Fragments</th></tr></thead>
-          <tbody id="results-body"></tbody>
-        </table>
-        <button id="btn-clear" class="btn danger">Effacer les scores (prof)</button>
+        <table><thead><tr><th>#</th><th>Prenom</th><th>Nom</th><th>Temps</th><th>Frag.</th></tr></thead>
+        <tbody id="results-body"></tbody></table>
+        <button id="btn-clear" class="btn danger">Effacer</button>
       </div>
       <button id="btn-back" class="btn secondary">Retour</button>
     </div>
   </div>
-  <script src="levels.js"></script>
-  <script src="bg.js"></script>
   <script src="game.js"></script>
 </body>
 </html>
