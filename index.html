@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>La Pierre Mysterieuse — Arts Plastiques 5°8</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>La Pierre Mystérieuse — Arts Plastiques 5°8</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -15,51 +16,63 @@
     </div>
     <canvas id="game" width="960" height="540"></canvas>
     <div id="message" class="hidden"></div>
-  </div>
-  <div id="start-screen" class="overlay">
-    <div class="panel">
-      <h1>La Pierre Mysterieuse</h1>
-      <p class="subtitle">Projet Arts Plastiques — Classe 5°8</p>
-      <p>Explore 3 mondes, collecte 4 fragments par niveau. Fleches/WASD + Espace.</p>
-      <button id="btn-start" class="btn primary">Commencer l'aventure</button>
-      <button id="btn-results" class="btn secondary">Voir les resultats (classe 5°8)</button>
+
+    <!-- Contrôles mobiles (affichés uniquement si mobile détecté) -->
+    <div id="mobile-controls" aria-hidden="true">
+      <div class="mc-left">
+        <button type="button" class="mc-btn" id="btn-left" aria-label="Gauche">◀</button>
+        <button type="button" class="mc-btn" id="btn-right" aria-label="Droite">▶</button>
+      </div>
+      <div class="mc-right-group">
+        <button type="button" class="mc-btn jump" id="btn-jump" aria-label="Sauter">⬆</button>
+      </div>
     </div>
-  </div>
-  <div id="lore-screen" class="overlay hidden">
-    <div class="panel lore">
-      <h2 id="lore-title">Fragment</h2>
+
+    <div id="start-screen" class="screen">
+      <h1>La Pierre Mystérieuse</h1>
+      <p>Explore les niveaux, collecte les fragments et reconstitue le secret de la pierre.<br>
+      <strong>Clavier :</strong> flèches / WASD + Espace<br>
+      <strong>Mobile :</strong> boutons à l'écran</p>
+      <button class="btn" id="btn-start">Commencer</button>
+      <button class="btn" id="btn-results">Voir les résultats (5°8)</button>
+    </div>
+
+    <div id="lore-screen" class="screen hidden">
+      <h2 id="lore-title"></h2>
       <p id="lore-text"></p>
-      <button id="btn-continue" class="btn primary">Continuer</button>
+      <button class="btn" id="btn-continue">Continuer</button>
     </div>
-  </div>
-  <div id="win-screen" class="overlay hidden">
-    <div class="panel">
-      <h2>La Pierre est reunie !</h2>
+
+    <div id="win-screen" class="screen hidden">
+      <h1>Pierre reconstituée !</h1>
       <p id="win-stats"></p>
+      <p>Entre ton prénom, nom et classe pour enregistrer ton score (visible par toute la 5°8).</p>
       <form id="score-form">
-        <input type="text" id="prenom" placeholder="Prenom" required />
-        <input type="text" id="nom" placeholder="Nom" required />
-        <input type="text" id="classe" placeholder="Classe (5°8)" required />
-        <button type="submit" class="btn primary">Enregistrer</button>
+        <input type="text" id="prenom" placeholder="Prénom" required autocomplete="given-name" />
+        <input type="text" id="nom" placeholder="Nom" required autocomplete="family-name" />
+        <input type="text" id="classe" placeholder="Classe (ex: 5°8)" required />
+        <button type="submit" class="btn">Enregistrer mon score</button>
       </form>
-      <p id="form-feedback" class="feedback"></p>
-      <button id="btn-replay" class="btn secondary">Rejouer</button>
+      <p id="form-feedback"></p>
+      <button class="btn" id="btn-replay">Rejouer</button>
     </div>
-  </div>
-  <div id="results-screen" class="overlay hidden">
-    <div class="panel wide">
-      <h2>Resultats 5°8</h2>
+
+    <div id="results-screen" class="screen hidden">
+      <h2>Résultats de la classe</h2>
       <div id="auth-box">
-        <input type="text" id="auth-classe" placeholder="5°8" />
-        <button id="btn-auth" class="btn primary">Valider</button>
-        <p id="auth-error" class="feedback error"></p>
+        <p>Entre le code de ta classe pour voir les scores partagés.</p>
+        <input type="text" id="auth-classe" placeholder="Code classe" />
+        <button class="btn" id="btn-auth">Accéder</button>
+        <p id="auth-error"></p>
       </div>
       <div id="results-list" class="hidden">
-        <table><thead><tr><th>#</th><th>Prenom</th><th>Nom</th><th>Temps</th><th>Frag.</th></tr></thead>
-        <tbody id="results-body"></tbody></table>
-        <button id="btn-clear" class="btn danger">Effacer</button>
+        <table>
+          <thead><tr><th>#</th><th>Prénom</th><th>Nom</th><th>Temps</th><th>Fragments</th></tr></thead>
+          <tbody id="results-body"></tbody>
+        </table>
+        <button class="btn" id="btn-clear">Effacer les scores</button>
       </div>
-      <button id="btn-back" class="btn secondary">Retour</button>
+      <button class="btn" id="btn-back">Retour</button>
     </div>
   </div>
   <script src="game.js"></script>
