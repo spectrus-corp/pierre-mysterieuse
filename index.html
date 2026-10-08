@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <title>La Pierre Mystérieuse — Arts Plastiques 5°8</title>
-  <link rel="stylesheet" href="style.css?v=4" />
+  <link rel="stylesheet" href="style.css?v=5" />
 </head>
 <body>
   <div id="ui">
@@ -16,7 +16,6 @@
     </div>
     <canvas id="game" width="960" height="540"></canvas>
     <div id="message" class="hidden"></div>
-
     <div id="mobile-controls" aria-hidden="true">
       <div class="mc-left">
         <button type="button" class="mc-btn" id="btn-left" aria-label="Gauche">◀</button>
@@ -26,7 +25,6 @@
         <button type="button" class="mc-btn jump" id="btn-jump" aria-label="Sauter">⬆</button>
       </div>
     </div>
-
     <div id="start-screen" class="screen">
       <h1>La Pierre Mystérieuse</h1>
       <p>Explore les niveaux, collecte les fragments et reconstitue le secret de la pierre.<br>
@@ -35,13 +33,11 @@
       <button class="btn" id="btn-start">Commencer</button>
       <button class="btn" id="btn-results">Voir les résultats (5°8)</button>
     </div>
-
     <div id="lore-screen" class="screen hidden">
       <h2 id="lore-title"></h2>
       <p id="lore-text"></p>
       <button class="btn" id="btn-continue">Continuer</button>
     </div>
-
     <div id="win-screen" class="screen hidden">
       <h1>Pierre reconstituée !</h1>
       <p id="win-stats"></p>
@@ -55,7 +51,6 @@
       <p id="form-feedback"></p>
       <button class="btn" id="btn-replay">Rejouer</button>
     </div>
-
     <div id="results-screen" class="screen hidden">
       <h2>Résultats de la classe</h2>
       <div id="auth-box">
@@ -74,8 +69,8 @@
       <button class="btn" id="btn-back">Retour</button>
     </div>
   </div>
-  <script src="game.js?v=4"></script>
-  <script src="admin.js?v=4"></script>
-  <script src="infinite.js?v=4"></script>
+  <script src="game.js?v=5"></script>
+  <script src="admin.js?v=5"></script>
+  <script src="infinite.js?v=5"></script>
 </body>
 </html>
