@@ -1,1 +1,73 @@
-PLACEHOLDER
+const canvas=document.getElementById("game"),ctx=canvas.getContext("2d"),W=canvas.width,H=canvas.height;
+const startScreen=document.getElementById("start-screen"),loreScreen=document.getElementById("lore-screen"),winScreen=document.getElementById("win-screen"),resultsScreen=document.getElementById("results-screen");
+const levelLabel=document.getElementById("level-label"),fragmentsEl=document.getElementById("fragments"),timerEl=document.getElementById("timer"),messageEl=document.getElementById("message");
+const loreTitle=document.getElementById("lore-title"),loreText=document.getElementById("lore-text"),winStats=document.getElementById("win-stats"),formFeedback=document.getElementById("form-feedback");
+const authBox=document.getElementById("auth-box"),resultsList=document.getElementById("results-list"),resultsBody=document.getElementById("results-body"),authError=document.getElementById("auth-error");
+const mobileControls=document.getElementById("mobile-controls");
+let state="title",currentLevel=0,keys={},startTime=0,elapsed=0,fragmentsCollected=0,totalFragments=0,cameraX=0,messageTimer=0,level=null;
+const CLASS_CODE="5°8",SCORES_URL="https://kvdb.io/Cv8UZtviGCJ763mChjGocC/scores";
+const player={x:60,y:300,w:28,h:36,vx:0,vy:0,onGround:!1,facing:1,anim:0};
+const LORE=[{title:"Fragment 1 — Origine",text:"Cette pierre n'est pas ordinaire. Les anciens la nommaient « Cœur de la Terre »."},{title:"Fragment 2 — Les artistes",text:"Elle inspirait les formes, les couleurs, les rêves."},{title:"Fragment 3 — Disparition",text:"La pierre fut brisée en trois et cachée dans des lieux sacrés."},{title:"La Pierre réunie",text:"L'art naît de la matière, de la patience et du regard. Tu as accompli ton voyage."}];
+
+function isMobile(){
+  return window.matchMedia("(pointer: coarse)").matches
+    || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
+    || (navigator.maxTouchPoints>1 && window.innerWidth<1024);
+}
+function setupMobileControls(){
+  if(!isMobile()){mobileControls.classList.remove("visible");mobileControls.setAttribute("aria-hidden","true");return}
+  mobileControls.classList.add("visible");
+  mobileControls.setAttribute("aria-hidden","false");
+  const bind=(id,key)=>{
+    const el=document.getElementById(id);
+    const down=e=>{e.preventDefault();e.stopPropagation();keys[key]=!0;el.classList.add("pressed")};
+    const up=e=>{e.preventDefault();e.stopPropagation();keys[key]=!1;el.classList.remove("pressed")};
+    el.addEventListener("touchstart",down,{passive:!1});
+    el.addEventListener("touchend",up,{passive:!1});
+    el.addEventListener("touchcancel",up,{passive:!1});
+    el.addEventListener("mousedown",down);
+    el.addEventListener("mouseup",up);
+    el.addEventListener("mouseleave",up);
+  };
+  bind("btn-left","ArrowLeft");
+  bind("btn-right","ArrowRight");
+  bind("btn-jump"," ");
+  document.body.addEventListener("touchmove",e=>{
+    if(state==="playing")e.preventDefault();
+  },{passive:!1});
+}
+
+function makeLevel(i){if(window.__useInf&&window.__infLevel)return window.__infLevel;const L=[
+{name:"La Grotte oubliée",width:2800,groundY:500,theme:"cave",platforms:[{x:0,y:500,w:2800,h:40},{x:180,y:420,w:120,h:16},{x:360,y:360,w:100,h:16},{x:520,y:300,w:110,h:16},{x:700,y:340,w:90,h:16},{x:880,y:280,w:100,h:16},{x:1080,y:220,w:120,h:16},{x:1300,y:300,w:140,h:16},{x:1500,y:380,w:100,h:16},{x:1700,y:320,w:110,h:16},{x:1920,y:260,w:130,h:16},{x:2150,y:340,w:120,h:16},{x:2350,y:280,w:150,h:16}],spikes:[{x:420,y:484,w:40},{x:980,y:484,w:50},{x:1600,y:484,w:45},{x:2100,y:484,w:55}],fragments:[{x:200,y:380},{x:1100,y:180},{x:1730,y:280},{x:2380,y:240}],exitX:2550},
+{name:"Forêt des reflets",width:3200,groundY:500,theme:"forest",platforms:[{x:0,y:500,w:3200,h:40},{x:150,y:400,w:100,h:16},{x:320,y:340,w:90,h:16},{x:500,y:280,w:80,h:16},{x:700,y:320,w:120,h:16,moveX:80,speed:40},{x:1000,y:360,w:100,h:16},{x:1200,y:280,w:90,h:16},{x:1400,y:220,w:110,h:16},{x:1650,y:300,w:100,h:16},{x:1850,y:360,w:90,h:16},{x:2050,y:280,w:130,h:16,moveX:60,speed:50},{x:2300,y:340,w:100,h:16},{x:2500,y:260,w:120,h:16},{x:2750,y:320,w:140,h:16}],spikes:[{x:600,y:484,w:50},{x:1100,y:484,w:40},{x:1750,y:484,w:55},{x:2400,y:484,w:45},{x:2900,y:484,w:50}],fragments:[{x:340,y:300},{x:1420,y:180},{x:2080,y:240},{x:2780,y:280}],exitX:2950},
+{name:"Temple du regard",width:3600,groundY:500,theme:"temple",platforms:[{x:0,y:500,w:3600,h:40},{x:120,y:420,w:110,h:16},{x:300,y:360,w:90,h:16},{x:480,y:300,w:100,h:16},{x:680,y:240,w:80,h:16},{x:900,y:300,w:120,h:16},{x:1150,y:360,w:100,h:16},{x:1350,y:280,w:90,h:16,moveX:70,speed:45},{x:1600,y:220,w:110,h:16},{x:1850,y:300,w:100,h:16},{x:2100,y:360,w:130,h:16},{x:2350,y:280,w:100,h:16},{x:2600,y:200,w:120,h:16},{x:2850,y:280,w:110,h:16,moveX:50,speed:55},{x:3100,y:340,w:150,h:16},{x:3350,y:280,w:120,h:16}],spikes:[{x:400,y:484,w:45},{x:800,y:484,w:50},{x:1500,y:484,w:40},{x:2000,y:484,w:55},{x:2700,y:484,w:50},{x:3200,y:484,w:45}],fragments:[{x:500,y:260},{x:1620,y:180},{x:2620,y:160},{x:3380,y:240}],exitX:3450}
+];return L[Math.min(i,L.length-1)]}
+
+function rectsOverlap(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
+function formatTime(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60);return m+":"+String(s%60).padStart(2,"0")}
+function showMsg(t,ms){messageEl.textContent=t;messageEl.classList.remove("hidden");messageTimer=ms||2000}
+function resetPlayer(){player.x=60;player.y=300;player.vx=0;player.vy=0;player.onGround=!1}
+function startLevel(i){if(!window.__useInf){window.__infLevel=null;}currentLevel=i;level=makeLevel(i);for(const p of level.platforms)if(p.moveX){p.baseX=p.baseX??p.x;p.phase=0}fragmentsCollected=0;totalFragments=level.fragments.length;levelLabel.textContent="Niveau "+(i+1)+" — "+level.name;fragmentsEl.textContent="Fragments : 0/"+totalFragments;resetPlayer();state="playing";if(i===0)startTime=performance.now()}
+function updateMoving(dt){for(const p of level.platforms){if(!p.moveX)continue;p.phase=(p.phase||0)+dt;const o=p.x;p.x=p.baseX+Math.sin(p.phase*(p.speed/50))*p.moveX;p._dx=p.x-o}}
+function update(dt){if(state!=="playing")return;updateMoving(dt);window.__player=player;window.__level=level;window.__state=state;window.__gamePlayerX=player.x;const C=window.__cheats||{speed:1,jump:1,gravity:1,fly:false,god:false};const spd=240*(C.speed||1),jmp=-580*(C.jump||1),grav=1100*(C.gravity||1);const L=keys.ArrowLeft||keys.a||keys.A,R=keys.ArrowRight||keys.d||keys.D,J=keys[" "]||keys.ArrowUp||keys.w||keys.W,DOWN=keys.ArrowDown||keys.s||keys.S;if(C.fly){player.vx=L?-spd:R?spd:player.vx*.7;if(L)player.facing=-1;if(R)player.facing=1;if(J)player.vy=-spd*1.2;else if(DOWN)player.vy=spd;else player.vy*=.85;player.onGround=!1}else{if(L){player.vx=-spd;player.facing=-1}else if(R){player.vx=spd;player.facing=1}else player.vx*=.7;if(J&&player.onGround){player.vy=jmp;player.onGround=!1}player.vy+=grav*dt;if(player.vy>850)player.vy=850}const pY=player.y,pB=pY+player.h;player.x+=player.vx*dt;if(player.x<0)player.x=0;if(player.x+player.w>level.width)player.x=level.width-player.w;for(const p of level.platforms)if(rectsOverlap({x:player.x,y:pY+2,w:player.w,h:player.h-4},p)){if(player.vx>0)player.x=p.x-player.w;else if(player.vx<0)player.x=p.x+p.w;player.vx=0}player.y+=player.vy*dt;player.onGround=!1;if(player.y+player.h>=level.groundY){player.y=level.groundY-player.h;player.vy=0;player.onGround=!0}for(const p of level.platforms){if(!rectsOverlap({x:player.x,y:player.y,w:player.w,h:player.h},p))continue;if(player.vy>=0&&pB<=p.y+10){player.y=p.y-player.h;player.vy=0;player.onGround=!0;if(p._dx)player.x+=p._dx}else if(player.vy<0&&pY>=p.y+p.h-4){player.y=p.y+p.h;player.vy=0}}for(const s of level.spikes)if(!(window.__cheats&&window.__cheats.god)&&rectsOverlap({x:player.x+4,y:player.y+8,w:player.w-8,h:player.h-8},{x:s.x,y:s.y,w:s.w,h:16})){showMsg("Aïe ! Les pointes...");resetPlayer();return}for(const f of level.fragments){if(f.collected)continue;if(rectsOverlap({x:player.x,y:player.y,w:player.w,h:player.h},{x:f.x,y:f.y,w:20,h:20})){f.collected=!0;fragmentsCollected++;fragmentsEl.textContent="Fragments : "+fragmentsCollected+"/"+totalFragments;showMsg("Fragment collecté !")}}elapsed=performance.now()-startTime;timerEl.textContent="Temps : "+formatTime(elapsed);cameraX=Math.max(0,Math.min(level.width-W,player.x-W*0.35));if(player.x+player.w>=level.exitX&&fragmentsCollected>=totalFragments){if(currentLevel<2){state="lore";loreTitle.textContent=LORE[currentLevel].title;loreText.textContent=LORE[currentLevel].text;loreScreen.classList.remove("hidden")}else{state="win";loreTitle.textContent=LORE[3].title;loreText.textContent=LORE[3].text;winStats.textContent="Temps total : "+formatTime(elapsed)+" — Fragments : "+fragmentsCollected;winScreen.classList.remove("hidden");loreScreen.classList.add("hidden")}}if(messageTimer>0){messageTimer-=dt*1000;if(messageTimer<=0)messageEl.classList.add("hidden")}}
+function drawBg(){const t=level.theme;if(t==="forest"){ctx.fillStyle="#0d1a10";ctx.fillRect(0,0,W,H);ctx.fillStyle="#1a2e1c";for(let i=0;i<8;i++){const x=((i*180-cameraX*0.3)%(W+100))-50;ctx.fillRect(x,H-180,40,180)}}else if(t==="temple"){ctx.fillStyle="#120a18";ctx.fillRect(0,0,W,H);ctx.fillStyle="#2a1830";for(let i=0;i<6;i++){const x=((i*220-cameraX*0.25)%(W+120))-60;ctx.fillRect(x,80,30,H-80)}}else{ctx.fillStyle="#0a0806";ctx.fillRect(0,0,W,H);ctx.fillStyle="#1a1410";for(let i=0;i<5;i++){const x=((i*250-cameraX*0.2)%(W+150))-80;ctx.beginPath();ctx.moveTo(x,H);ctx.lineTo(x+75,H-120);ctx.lineTo(x+150,H);ctx.fill()}}}
+function draw(){if(!level)return;ctx.clearRect(0,0,W,H);drawBg();const gy=level.groundY;ctx.fillStyle=level.theme==="forest"?"#1a2a1c":level.theme==="temple"?"#221828":"#2a2218";ctx.fillRect(0,gy,W,H-gy);ctx.fillStyle=level.theme==="temple"?"#8a6070":"#6a5050";for(const s of level.spikes){const sx=s.x-cameraX;if(sx+s.w<0||sx>W)continue;const n=Math.max(2,Math.floor(s.w/12));for(let i=0;i<n;i++){const px=sx+i*(s.w/n);ctx.beginPath();ctx.moveTo(px,s.y+16);ctx.lineTo(px+s.w/n/2,s.y);ctx.lineTo(px+s.w/n,s.y+16);ctx.fill()}}for(const p of level.platforms){const px=p.x-cameraX;if(px+p.w<-20||px>W+20)continue;ctx.fillStyle=level.theme==="forest"?"#3a4a30":level.theme==="temple"?"#4a3560":"#4a3c28";ctx.fillRect(px,p.y,p.w,p.h);ctx.fillStyle=level.theme==="temple"?"#7a5a90":"#6b5430";ctx.fillRect(px,p.y,p.w,4)}for(const f of level.fragments){if(f.collected)continue;const fx=f.x-cameraX;if(fx<-20||fx>W+20)continue;const pulse=0.7+0.3*Math.sin(performance.now()/200);ctx.fillStyle=`rgba(232,197,71,${pulse})`;ctx.beginPath();ctx.arc(fx+10,f.y+10,10,0,Math.PI*2);ctx.fill()}const ex=level.exitX-cameraX;if(ex>-30&&ex<W+30){ctx.fillStyle=fragmentsCollected>=totalFragments?"#e8c547":"#5a5040";ctx.fillRect(ex,gy-80,24,80);ctx.fillStyle="#1a120b";ctx.fillRect(ex+4,gy-76,16,20)}const px=player.x-cameraX,py=player.y;ctx.fillStyle="#e8c547";ctx.fillRect(px+4,py+4,player.w-8,player.h-8);ctx.fillStyle="#1a120b";ctx.fillRect(px+(player.facing>0?16:6),py+10,4,4);ctx.fillRect(px+(player.facing>0?6:16),py+10,4,4)}
+function loop(t){const now=t||performance.now();if(!loop.last)loop.last=now;const dt=Math.min(0.05,(now-loop.last)/1000);loop.last=now;update(dt);draw();requestAnimationFrame(loop)}
+window.addEventListener("keydown",e=>{keys[e.key]=!0;if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key))e.preventDefault()});
+window.addEventListener("keyup",e=>{keys[e.key]=!1});
+document.getElementById("btn-start").addEventListener("click",()=>{window.__useInf=false;window.__infLevel=null;startScreen.classList.add("hidden");startLevel(0);showMsg("Collecte les 4 fragments !")});
+document.getElementById("btn-continue").addEventListener("click",()=>{loreScreen.classList.add("hidden");startLevel(currentLevel+1)});
+document.getElementById("btn-replay").addEventListener("click",()=>{winScreen.classList.add("hidden");startScreen.classList.remove("hidden");state="title"});
+document.getElementById("btn-results").addEventListener("click",()=>{startScreen.classList.add("hidden");resultsScreen.classList.remove("hidden");authBox.classList.remove("hidden");resultsList.classList.add("hidden")});
+document.getElementById("btn-back").addEventListener("click",()=>{resultsScreen.classList.add("hidden");startScreen.classList.remove("hidden")});
+document.getElementById("btn-auth").addEventListener("click",async()=>{const c=(document.getElementById("auth-classe").value||"").trim().replace(/\s/g,"");if(c!==CLASS_CODE&&c!=="5e8"&&c!=="5E8"){authError.textContent="Code incorrect";return}authError.textContent="";authBox.classList.add("hidden");resultsList.classList.remove("hidden");try{const r=await fetch(SCORES_URL+"?t="+Date.now(),{cache:"no-store"});const data=r.ok?await r.json():[];renderScores(Array.isArray(data)?data:[])}catch(e){renderScores([])}});
+function renderScores(arr){resultsBody.innerHTML="";const sorted=[...arr].sort((a,b)=>(a.time||999999)-(b.time||999999));sorted.forEach((s,i)=>{const tr=document.createElement("tr");const badge=i===0?' <span title="Meilleur joueur">👑</span>':"";tr.innerHTML=`<td>${i+1}${badge}</td><td>${esc(s.prenom||"")}</td><td>${esc(s.nom||"")}</td><td>${formatTime(s.time||0)}</td><td>${s.fragments||0}</td>`;resultsBody.appendChild(tr)})}
+function esc(t){const d=document.createElement("div");d.textContent=t;return d.innerHTML}
+document.getElementById("score-form").addEventListener("submit",async e=>{e.preventDefault();const prenom=document.getElementById("prenom").value.trim(),nom=document.getElementById("nom").value.trim(),classe=document.getElementById("classe").value.trim();if(!prenom||!nom)return;const c=classe.replace(/\s/g,"");if(c!==CLASS_CODE&&c!=="5e8"&&c!=="5E8"){formFeedback.textContent="Classe invalide (utilise 5°8)";return}const entry={prenom,nom,classe:CLASS_CODE,time:elapsed,fragments:fragmentsCollected,date:new Date().toISOString()};try{let arr=[];try{const r=await fetch(SCORES_URL+"?t="+Date.now(),{cache:"no-store"});if(r.ok)arr=await r.json();if(!Array.isArray(arr))arr=[]}catch(err){arr=[]}arr.push(entry);await fetch(SCORES_URL,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(arr)});formFeedback.textContent="Score enregistré !"}catch(err){formFeedback.textContent="Erreur réseau"}});
+document.getElementById("btn-clear").addEventListener("click",async()=>{
+  if(!confirm("Effacer TOUS les scores de la classe ?"))return;
+  try{await fetch(SCORES_URL,{method:"PUT",headers:{"Content-Type":"application/json"},body:"[]"});renderScores([])}catch(e){alert("Erreur réseau")}
+});
+setupMobileControls();
+requestAnimationFrame(loop);
+window.__cheats=window.__cheats||{speed:1,jump:1,gravity:1,fly:false,god:false};
