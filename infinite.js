@@ -1,7 +1,6 @@
 (function(){
   var INF={active:false,distance:0,bestDist:0};
-  var origMakeLevel=null;
-  var infLevel=null;
+  try{INF.bestDist=parseInt(localStorage.getItem("pierre_inf_best")||"0",10)||0;}catch(e){}
 
   function mulberry32(a){return function(){var t=a+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};}
   function pick(rng,arr){return arr[Math.floor(rng()*arr.length)];}
@@ -52,8 +51,6 @@
     return {width:width,exitY:y,platforms:platforms,spikes:spikes,fragments:[]};
   }
 
-  function themeForDist(d){return ["cave","forest","temple"][Math.floor(d/3000)%3];}
-
   function buildInfiniteLevel(seed,count){
     var rng=mulberry32(seed|0),groundY=500;
     var platforms=[{x:40,y:420,w:160,h:16}],spikes=[];
@@ -65,70 +62,37 @@
       x+=mod.width;y=mod.exitY;
     }
     return {
-      name:"Infini ∞",width:x+400,groundY:groundY,theme:themeForDist(0),
+      name:"Infini ∞",width:x+400,groundY:groundY,theme:["cave","forest","temple"][seed%3],
       platforms:platforms,spikes:spikes,fragments:[],
-      exitX:x+999999,_inf:true,_nextX:x,_nextY:y,_seed:seed,_modCount:count
+      exitX:x+999999,_inf:true,_modCount:count
     };
   }
 
-  function installMakeHook(){
-    if(typeof makeLevel!=="function")return;
-    if(makeLevel._infWrap)return;
-    origMakeLevel=makeLevel;
-    function wrapped(i){
-      if(window.__useInf&&infLevel)return infLevel;
-      return origMakeLevel(i);
-    }
-    wrapped._infWrap=true;
-    window.makeLevel=wrapped;
-    try{makeLevel=wrapped;}catch(e){}
-  }
-
   function startInfinite(){
-    if(typeof startLevel!=="function"){
-      alert("Jeu pas encore chargé, attends 1s et réessaie.");
-      return;
-    }
-    installMakeHook();
+    if(typeof startLevel!=="function"){alert("Jeu pas encore chargé");return;}
     INF.active=true;INF.distance=0;
-    INF.seed=(Date.now()&0xfffff)^((Math.random()*1e6)|0);
-    infLevel=buildInfiniteLevel(INF.seed,60);
+    var seed=(Date.now()&0xfffff)^((Math.random()*1e6)|0);
     window.__useInf=true;
+    window.__infLevel=buildInfiniteLevel(seed,60);
     ["start-screen","win-screen","lore-screen","results-screen","admin-screen"].forEach(function(id){
-      var el=document.getElementById(id);if(el)el.classList.add("hidden");
+      var el=document.getElementById(id);if(el){el.classList.add("hidden");el.style.display="none";}
     });
     startLevel(0);
     var lab=document.getElementById("level-label");
     if(lab)lab.textContent="Mode Infini ∞";
-    var fr=document.getElementById("fragments");
-    if(fr)fr.textContent="Distance : 0 m";
-    var tm=document.getElementById("timer");
-    if(tm)tm.textContent="Modules : "+infLevel._modCount;
     if(typeof showMsg==="function")showMsg("Mode Infini — va le plus loin possible !",2500);
-    startTracker();
-  }
-
-  var trackId=null;
-  function startTracker(){
-    if(trackId)cancelAnimationFrame(trackId);
-    var t0=performance.now();
-    function tick(){
-      trackId=requestAnimationFrame(tick);
-      if(!INF.active||!infLevel||!window.__useInf)return;
-      var px=null;
-      if(window.__game&&window.__game.player)px=window.__game.player.x;
-      if(px==null)px=(performance.now()-t0)*0.18;
-      INF.distance=Math.max(INF.distance,Math.floor(px/10));
+    (function tick(){
+      requestAnimationFrame(tick);
+      if(!INF.active||!window.__useInf)return;
+      var px=window.__gamePlayerX;
+      if(typeof px==="number")INF.distance=Math.max(INF.distance,Math.floor(px/10));
       var fr=document.getElementById("fragments");
-      if(fr)fr.textContent="Distance : "+INF.distance+" m";
-      var tm=document.getElementById("timer");
-      if(tm)tm.textContent="Modules : "+(infLevel._modCount||0);
+      if(fr)fr.textContent="Distance : "+INF.distance+" m · Record : "+INF.bestDist+" m";
       if(INF.distance>INF.bestDist){
         INF.bestDist=INF.distance;
         try{localStorage.setItem("pierre_inf_best",String(INF.bestDist));}catch(e){}
       }
-    }
-    tick();
+    })();
   }
 
   function addUI(){
@@ -139,34 +103,11 @@
       b.addEventListener("click",startInfinite);
       var res=document.getElementById("btn-results");
       if(res)start.insertBefore(b,res);else start.appendChild(b);
-      try{
-        var best=localStorage.getItem("pierre_inf_best");
-        if(best){
-          var p=document.createElement("p");
-          p.style.cssText="color:#a89060;font-size:0.85rem;margin-top:4px";
-          p.textContent="Record infini : "+best+" m";
-          b.insertAdjacentElement("afterend",p);
-        }
-      }catch(e){}
-    }
-    var win=document.getElementById("win-screen");
-    if(win&&!document.getElementById("btn-infinite")){
-      var b2=document.createElement("button");
-      b2.className="btn";b2.id="btn-infinite";b2.textContent="Mode Infini ∞";
-      b2.style.marginTop="8px";
-      b2.addEventListener("click",startInfinite);
-      var replay=document.getElementById("btn-replay");
-      if(replay)win.insertBefore(b2,replay);else win.appendChild(b2);
     }
   }
 
   window.startInfiniteMode=startInfinite;
-
-  function boot(){
-    addUI();installMakeHook();
-    setTimeout(function(){addUI();installMakeHook();},800);
-    setTimeout(installMakeHook,2000);
-  }
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot);
-  else boot();
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",addUI);
+  else addUI();
+  setTimeout(addUI,600);
 })();
